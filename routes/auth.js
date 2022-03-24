@@ -1,8 +1,15 @@
 const router = require('express').Router();
-const User = require('../model/User')
-
+const User = require('../model/User');
+const { registrationValidation, loginValidation } = require('../validation');
 
 router.post('/register', async (req, res) => {
+
+    //Validate data before creating user
+    const { error } = registrationValidation(req.body);
+    if (error) {
+        return res.status(400).send(error.details[0].message)
+    }
+
     const user = new User({
         name: req.body.name,
         lastName: req.body.lastName,
