@@ -4,12 +4,18 @@ const { registrationValidation, loginValidation } = require('../validation');
 
 router.post('/register', async (req, res) => {
 
-    //Validate data before creating user
+    //Validating data before creating user
     const { error } = registrationValidation(req.body);
     if (error) {
-        return res.status(400).send(error.details[0].message)
-    }
+        return res.status(400).send(error.details[0].message);
+    };
 
+    //Check if user exists
+    const userExist = await User.findOne({ email: req.body.email });
+    if ( userExist ) return res.status(400).send('User Exists');
+
+
+    //Creating new user
     const user = new User({
         name: req.body.name,
         lastName: req.body.lastName,
@@ -28,9 +34,22 @@ router.post('/register', async (req, res) => {
 });
 
 
-// router.post('/login', (req, res) => {
+// Logging User in
+router.post('/login', async (req, res) => {
+    const user = await User.findOne({ email: req.body.email });
+        if (!user) {
+            return res.status(400).json({ message: "Can't find this user" });
+        }
+  
+        const correctPw = await user.isCorrectPassword(req.body.password);
+  
+        if (!correctPw) {
+            return res.status(400).json({ message: "Wrong password!" });
+        }
+    
+        return res.status(200).json({ message: "Logged In!" });
 
-// })
+})
 
 
 module.exports = router;
