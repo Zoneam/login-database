@@ -7,12 +7,12 @@ router.post('/register', async (req, res) => {
     //Validating data before creating user
     const { error } = registrationValidation(req.body);
     if (error) {
-        return res.status(400).send(error.details[0].message);
+        return res.status(400).send( error.details[0].message );
     };
 
     //Check if user exists
     const userExist = await User.findOne({ email: req.body.email });
-    if ( userExist ) return res.status(400).send('User Exists');
+    if (userExist) return res.status(400).send({ id: userExist._id, message: 'User Exists' });
 
 
     //Creating new user
@@ -26,7 +26,7 @@ router.post('/register', async (req, res) => {
 
     try {
         const savedUser = await user.save();
-        res.send(savedUser);
+        res.status(200).send({ id: savedUser._id, message: "New user has been registered." });
     } catch (err) {
         res.status(400).send(err);
     }
@@ -38,16 +38,16 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
         if (!user) {
-            return res.status(400).json({ message: "Can't find this user" });
+            return res.status(400).send({ message: "Can't find this user" });
         }
   
         const correctPw = await user.isCorrectPassword(req.body.password);
   
         if (!correctPw) {
-            return res.status(400).json({ message: "Wrong password!" });
+            return res.status(400).send({ message: "Wrong password!" });
         }
     
-        return res.status(200).json({ message: "Logged In!" });
+        return res.status(200).send({ id: user._id, message: "Logged In!" });
 
 })
 
